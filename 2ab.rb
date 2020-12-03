@@ -213,7 +213,7 @@ class PartOnePassword < Password
   private
 
   def letter_count
-    @password.chars.select { |l| l == @letter }.count
+    @password.chars.count { |l| l == @letter }
   end
 end
 
