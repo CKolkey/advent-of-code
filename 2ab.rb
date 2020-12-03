@@ -1,4 +1,4 @@
-require "pry-byebug"
+# frozen_string_literal: true
 
 class ListParser
   LIST = [
@@ -170,47 +170,69 @@ class ListParser
     "9-10 h: hhhhhhhhfg", "7-8 r: rrrrrrvl", "8-9 n: rnsnvlrqdq", "4-7 f: ffwnzdf", "15-18 x: ngxxvqwxzlhxwpxxxz", "13-15 w: nwwwwwqwwwwwtww"
   ].freeze
 
-  def initialize
-    @valid_count = 0
+  def initialize(validator, list)
+    @count     = 0
+    @validator = validator
+    @list      = list
   end
 
   def run
-    LIST.each do |string|
-      @valid_count += 1 if make_struct(string).valid?
+    @list.each do |string|
+      @count += 1 if @validator.new(string).valid?
     end
 
-    puts @valid_count
-  end
-
-  private
-
-  def make_struct(string)
-    Password.new(string)
+    puts @count
   end
 end
 
 class Password
   def initialize(string)
-    @string = string
-    @range_start = parse[:range_start].to_i
-    @range_end   = parse[:range_end].to_i
-    @letter      = parse[:letter]
-    @password    = parse[:password]
+    @string   = string
+    @min      = parse[:min].to_i
+    @max      = parse[:max].to_i
+    @letter   = parse[:letter]
+    @password = parse[:password]
   end
 
   def valid?
-    (@range_start..@range_end).cover?(letter_count)
+    raise NotImplementedError
   end
 
   private
 
   def parse
-    @parse ||= @string.match(/(?<range_start>.*)-(?<range_end>.*) (?<letter>.{1}): (?<password>.*)$/)
+    @parse ||= @string.match(/(?<min>.*)-(?<max>.*) (?<letter>.{1}): (?<password>.*)$/)
   end
+end
+
+class PartOnePassword < Password
+  def valid?
+    (@min..@max).cover?(letter_count)
+  end
+
+  private
 
   def letter_count
     @password.chars.select { |l| l == @letter }.count
   end
 end
 
-ListParser.new.run
+class PartTwoPassword < Password
+  def valid?
+    (first == @letter && second != @letter) ||
+      (first != @letter && second == @letter)
+  end
+
+  private
+
+  def first
+    @first ||= @password[@min - 1]
+  end
+
+  def second
+    @second ||= @password[@max - 1]
+  end
+end
+
+ListParser.new(PartOnePassword).run
+ListParser.new(PartTwoPassword).run
