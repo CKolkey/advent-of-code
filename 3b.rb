@@ -326,44 +326,33 @@ MAP = <<~EOF
   ...###.###.....##..........#..#
 EOF
 
-class TreeFinder
-  TREE = "#"
+SLOPES = [
+  { x: 1, y: 1 },
+  { x: 3, y: 1 },
+  { x: 5, y: 1 },
+  { x: 7, y: 1 },
+  { x: 1, y: 2 }
+].freeze
 
-  def initialize(map)
-    @map        = map
-    @slopes     = [
-      { x: 1, y: 1 },
-      { x: 3, y: 1 },
-      { x: 5, y: 1 },
-      { x: 7, y: 1 },
-      { x: 1, y: 2 }
-    ]
+class TreeFinder
+  def initialize(map, slope)
+    @map   = map
+    @slope = slope
+    @x_pos = 1
+    @trees = 0
   end
 
   def run
-    @slopes.reduce(1) { |product, slope| product * count_trees(slope) }
-  end
+    @map.split("\n").each_with_index do |row, index|
+      next if @slope[:y] == 2 && index.odd?
 
-  private
-
-  def count_trees(slope)
-    x_position = 1
-    trees      = 0
-
-    split_map.each_with_index do |row, index|
-      next if slope[:y] == 2 && index.odd?
-
-      x_position -= row.length if x_position > row.length
-      trees += 1 if row[x_position - 1] == TREE
-      x_position += slope[:x]
+      @x_pos -= row.length if @x_pos > row.length
+      @trees += 1 if row[@x_pos - 1] == "#"
+      @x_pos += @slope[:x]
     end
 
-    trees
-  end
-
-  def split_map
-    @split_map ||= @map.split("\n")
+    @trees
   end
 end
 
-puts TreeFinder.new(MAP).run
+puts SLOPES.reduce(1) { |product, slope| product * TreeFinder.new(MAP, slope).run }
