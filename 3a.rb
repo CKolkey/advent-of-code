@@ -327,8 +327,6 @@ MAP = <<~EOF
 EOF
 
 class TreeFinder
-  TREE = "#"
-
   def initialize(map)
     @map        = map
     @x_position = 1
@@ -336,19 +334,13 @@ class TreeFinder
   end
 
   def run
-    split_map.each do |row|
+    @map.split("\n").each do |row|
       @x_position -= row.length if @x_position > row.length
-      @tree_count += 1 if row[@x_position - 1] == TREE
+      @tree_count += 1 if row[@x_position - 1] == "#"
       @x_position += 3
     end
 
     puts @tree_count
-  end
-
-  private
-
-  def split_map
-    @split_map ||= @map.split("\n")
   end
 end
 
