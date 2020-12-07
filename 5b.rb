@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-PASSES = File.readlines("day5.input")
+PASSES = File.readlines("5.input")
 
 class BSearcher
   def initialize(array, instructions)
