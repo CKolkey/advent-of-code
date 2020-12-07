@@ -9,26 +9,26 @@ RULES = File.readlines("7.input").map do |rule|
 
 class Bag
   def initialize(name)
-    @name     = name
+    @name    = name
     @contents = []
 
-    create_contents
+    fill_contents
   end
 
-  def create_contents
+  def quantify_contents
+    inventory_map.flatten.sum
+  end
+
+  protected
+
+  def fill_contents
     RULES.fetch(@name)&.each do |bag|
       bag.to_i.times { @contents << Bag.new(bag.split[1..].join(" ")) }
     end
   end
 
-  def quantify_contents
-    count_contents.flatten.sum
-  end
-
-  protected
-
-  def count_contents
-    @contents.any? ? @contents.map { |child| [1, child.count_contents] } : 0
+  def inventory_map
+    @contents.any? ? @contents.map { |child| [1, child.inventory_map] } : 0
   end
 end
 
