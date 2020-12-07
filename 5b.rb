@@ -29,8 +29,6 @@ class BSearcher
 end
 
 class SeatFinder
-  attr_reader :rows, :columns
-
   def initialize(col_input, row_input)
     @col_input = col_input.split("").map { |i| i == "L" ? 0 : 1 }
     @row_input = row_input.split("").map { |i| i == "F" ? 0 : 1 }
@@ -39,6 +37,8 @@ class SeatFinder
   def seat_id
     find_row * 8 + find_column
   end
+
+  private
 
   def find_column
     BSearcher.new((0..7).to_a, @col_input).find
