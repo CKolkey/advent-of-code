@@ -19,6 +19,7 @@ loop do
   end
 
   break if execution[offset]
+
   execution[offset] = [inst, n]
 end
 

@@ -26,6 +26,7 @@ def run_instructions(instructions)
     end
 
     break if execution[offset]
+
     execution[offset] = :run
   end
 end
@@ -38,6 +39,6 @@ def substitute_inst(index, sub)
   INSTRUCTIONS.dup.tap { |inst| inst[index] = [sub, inst[index][1]] }
 end
 
-["jmp", "nop"].permutation(2).each do |original, substitute|
+%w[jmp nop].permutation(2).each do |original, substitute|
   find_indexes_for_inst(original).each { |index| run_instructions(substitute_inst(index, substitute)) }
 end
