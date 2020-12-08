@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 require "pry-byebug"
 
-PASSPORTS = <<~passports
+PASSPORTS = <<~PASSPORTS
   iyr:1928 cid:150 pid:476113241 eyr:2039 hcl:a5ac0f
   ecl:#25f8d2
   byr:2027 hgt:190
@@ -958,7 +960,7 @@ PASSPORTS = <<~passports
   iyr:2018
   ecl:#5b11eb
   byr:1950
-passports
+PASSPORTS
 
 def split_passports
   PASSPORTS.split("\n\n").map { |pass| pass.scan(/(.{3}):(\S*)/).to_h }
@@ -969,15 +971,15 @@ def valid_keys?(passport)
   return false unless (2010..2020).cover? passport["iyr"].to_i
   return false unless (2020..2030).cover? passport["eyr"].to_i
   return false unless %w[amb blu brn gry grn hzl oth].include? passport["ecl"]
-  return false unless passport["pid"].match? %r{\A\d{9}\z}
-  return false unless passport["hcl"].match? %r{#[0-9a-f]{6}}
+  return false unless passport["pid"].match?(/\A\d{9}\z/)
+  return false unless passport["hcl"].match?(/#[0-9a-f]{6}/)
   return false unless valid_height?(passport["hgt"])
 
   true
 end
 
 def valid_height?(height)
-  range = case height[-2..-1]
+  range = case height[-2..]
           when "in"
             (59..76)
           when "cm"
