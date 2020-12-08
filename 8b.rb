@@ -2,7 +2,7 @@
 
 INSTRUCTIONS = File.readlines("8.input").map(&:split).map { |(inst, n)| [inst, n.to_i] }
 
-def run_instructions(instructions)
+def run(instructions)
   accumulator = 0
   offset      = 0
   execution   = {}
@@ -31,7 +31,7 @@ def run_instructions(instructions)
   end
 end
 
-def find_indexes_for_inst(inst)
+def indexes_for_inst(inst)
   INSTRUCTIONS.each_index.select { |i| INSTRUCTIONS[i][0] == inst }
 end
 
@@ -39,6 +39,6 @@ def substitute_inst(index, sub)
   INSTRUCTIONS.dup.tap { |inst| inst[index] = [sub, inst[index][1]] }
 end
 
-%w[jmp nop].permutation(2).each do |original, substitute|
-  find_indexes_for_inst(original).each { |index| run_instructions(substitute_inst(index, substitute)) }
+%w[jmp nop].permutation(2).each do |inst, sub|
+  indexes_for_inst(inst).each { |index| run(substitute_inst(index, sub)) }
 end
