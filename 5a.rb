@@ -16,7 +16,7 @@ class BSearcher
   private
 
   def bisect_array
-    @instructions.shift == 0 ? @array.slice(front) : @array.slice(rear)
+    @instructions.shift.zero? ? @array.slice(front) : @array.slice(rear)
   end
 
   def front
@@ -50,7 +50,6 @@ class SeatFinder
     BSearcher.new(@rows, @row_input).find
   end
 end
-
 
 max = 0
 PASSES.each do |pass|

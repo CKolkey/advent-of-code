@@ -16,7 +16,7 @@ class BSearcher
   private
 
   def bisect_array
-    @instructions.shift == 0 ? @array.slice(front) : @array.slice(rear)
+    @instructions.shift.zero? ? @array.slice(front) : @array.slice(rear)
   end
 
   def front
@@ -48,7 +48,6 @@ class SeatFinder
     BSearcher.new((0..127).to_a, @row_input).find
   end
 end
-
 
 ids = PASSES.each_with_object([]) { |pass, ids| ids << SeatFinder.new(pass.slice(7, 3), pass.slice(0, 7)).seat_id }.sort
 puts "Max Seat ID: #{ids.max}"
