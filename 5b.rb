@@ -49,6 +49,6 @@ class SeatFinder
   end
 end
 
-ids = PASSES.each_with_object([]) { |pass, ids| ids << SeatFinder.new(pass.slice(7, 3), pass.slice(0, 7)).seat_id }.sort
-puts "Max Seat ID: #{ids.max}"
-puts "My Seat ID: #{(ids.first..ids.last).sum - ids.sum}"
+all_ids = PASSES.each_with_object([]) { |pass, ids| ids << SeatFinder.new(pass.slice(7, 3), pass.slice(0, 7)).seat_id }.sort
+puts "Max Seat ID: #{all_ids.max}"
+puts "My Seat ID: #{(all_ids.first..all_ids.last).sum - all_ids.sum}"
