@@ -3,9 +3,9 @@
 INSTRUCTIONS = File.readlines("8.input").map(&:split).map { |(inst, n)| [inst, n.to_i] }
 
 def run_instructions(instructions)
-  accumulator  = 0
-  offset       = 0
-  execution    = {}
+  accumulator = 0
+  offset      = 0
+  execution   = {}
 
   loop do
     inst, n = instructions[offset]
@@ -26,7 +26,7 @@ def run_instructions(instructions)
     end
 
     break if execution[offset]
-    execution[offset] = [inst, n]
+    execution[offset] = :run
   end
 end
 
