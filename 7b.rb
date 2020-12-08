@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 RULES = File.readlines("7.input").map do |rule|
-          rule.gsub(/bag(s|)(\.|)/, "")
-              .split("contain")
-              .map(&:strip)
-              .map.with_index { |rule, i| i.zero? ? rule : rule.split(",") }
-        end.to_h
+  rule.gsub(/bag(s|)(\.|)/, "")
+      .split("contain")
+      .map(&:strip)
+      .map.with_index { |r, i| i.zero? ? r : r.split(",") }
+end.to_h
 
 class Bag
   def initialize(name)
