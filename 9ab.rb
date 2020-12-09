@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# N = Numbers, T = Target, W = Window
+# N = Numbers, T = Target, W = Window, p = pair, i = index
 N = File.readlines("9.input").map(&:to_i)
 
 # Part I
