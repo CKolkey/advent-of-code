@@ -3,7 +3,7 @@
 require "set"
 
 RULES = File.readlines("7.input").map do |rule|
-  rule.gsub(/bag(s|)(\.|)/, "")
+  rule.gsub(/bags?\.?/, "")
       .split("contain")
       .map(&:strip)
       .map.with_index { |str, indx| indx.zero? ? str : str.split(",").map(&:strip) }

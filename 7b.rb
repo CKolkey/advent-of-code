@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RULES = File.readlines("7.input").map do |rule|
-  rule.gsub(/bag(s|)(\.|)/, "")
+  rule.gsub(/bags?\.?/, "")
       .split("contain")
       .map(&:strip)
       .map.with_index { |r, i| i.zero? ? r : r.split(",") }
