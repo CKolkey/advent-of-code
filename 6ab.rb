@@ -6,4 +6,4 @@ INPUT = File.read("6.input").split("\n\n")
 p(INPUT.sum { |a| a.scan(/\S/).uniq.length })
 
 # part 2 (2947)
-p(INPUT.map(&:split).sum { |arr| arr.map { |a| a.scan(/\S/) }.inject(:&).length })
+p(INPUT.map(&:split).sum { |arr| arr.map(&:chars).inject(:&).length })
