@@ -20,7 +20,7 @@ loop do
     break
   elsif scope.sum > T
     offset += 1
-    window = 1
+    window  = 1
   else
     window += 1
   end
