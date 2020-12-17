@@ -19,10 +19,10 @@ def update(seats)
     seats.each do |b, v|
       next if v.nil?
 
-      surrounding_count = count_all_vectors(seats, b)
-      if v.zero? && surrounding_count.zero?
+      visible_occupied_seats = count_all_vectors(seats, b)
+      if v.zero? && visible_occupied_seats.zero?
         new[b] = 1
-      elsif surrounding_count >= 5
+      elsif visible_occupied_seats >= 5
         new[b] = 0
       end
     end
@@ -34,7 +34,7 @@ def count_all_vectors(seats, seat)
 end
 
 def count_vector(seats, seat, x_diff, y_diff)
-  (1..Float::INFINITY).lazy.each do |n|
+  (1..Float::INFINITY).each do |n|
     case seats.fetch(travel_vector(seat, x_diff, y_diff, n), :end)
     when :end, 0
       break 0
@@ -55,6 +55,7 @@ def count(seats)
   seats.values.compact.sum
 end
 
+start = Time.now
 prev = make_map(File.readlines("11.input"))
 loop do
   new = update(prev)
@@ -63,5 +64,7 @@ loop do
 
   prev = new
 end
+
+puts Time.now - start
 
 # 2234
