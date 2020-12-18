@@ -3,9 +3,9 @@
 DIRECTIONS = File.readlines("12.input").map { |dir| [dir[0].to_sym, dir[1..].to_i] }
 
 class Ship
-  def initialize(directions)
+  def initialize(directions, heading)
     @directions = directions
-    @heading = :E
+    @heading = heading
     @x_pos   = 0
     @y_pos   = 0
   end
@@ -23,25 +23,30 @@ class Ship
     end
   end
 
-  def abs_position
-    { x: @x_pos.abs, y: @y_pos.abs }
+  def position
+    { x: @x_pos, y: @y_pos }
   end
 
   private
 
   def update_heading(relative_action, n)
-    @heading = case @heading
-               when :N
-                 relative_action == :R ? :E : :W
-               when :S
-                 relative_action == :R ? :W : :E
-               when :E
-                 relative_action == :R ? :S : :N
-               when :W
-                 relative_action == :R ? :N : :S
-               end
+    @heading = relative_heading(relative_action)
 
+    # Call method again with 90 fewer degrees until no degrees are left
     update_heading(relative_action, n - 90) if (n - 90).positive?
+  end
+
+  def relative_heading(relative_action)
+    case @heading
+    when :N
+      relative_action == :R ? :E : :W
+    when :S
+      relative_action == :R ? :W : :E
+    when :E
+      relative_action == :R ? :S : :N
+    when :W
+      relative_action == :R ? :N : :S
+    end
   end
 
   def move(cardinal, n)
@@ -58,6 +63,6 @@ class Ship
   end
 end
 
-ship = Ship.new(DIRECTIONS)
+ship = Ship.new(DIRECTIONS, :E)
 ship.compute_course
-puts ship.abs_position.values.sum
+puts ship.position.values.sum(&:abs)
