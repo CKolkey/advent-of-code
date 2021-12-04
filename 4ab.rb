@@ -39,7 +39,7 @@ class Board
   end
 
   def column_won?
-    @board.transpose.any? { |row| winning_set?(row) }
+    @board.transpose.any? { |col| winning_set?(col) }
   end
 
   def winning_set?(set)
