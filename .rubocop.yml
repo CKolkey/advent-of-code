@@ -1,0 +1,65 @@
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.0
+  Include:
+    - 'app/**/*.rb'
+    - 'spec/**/*.rb'
+    - 'lib/umr/**/*.rb'
+    - 'lib/ooxml_builder/**/*.rb'
+  Exclude:
+    - 'vendor/**/*'
+    - 'bin/**/*'
+    - 'db/schema.rb'
+
+Lint/EmptyBlock:
+  AllowComments: false
+  Exclude:
+    - 'spec/data_migrations/**/*'
+    - 'app/data_migrations/**/*'
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+  ConsistentQuotesInMultiline: true
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Style/Copyright:
+  Enabled: false
+
+Naming/VariableNumber:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Naming/AccessorMethodName:
+  Enabled: false
+
+Bundler/OrderedGems:
+  Enabled: false
+
+Lint/MissingSuper:
+  Enabled: false
+
+
+Metrics/ModuleLength:
+  Exclude:
+    - 'lib/*/spec/**/*.rb'
+
+Metrics/BlockLength:
+  CountComments: false
+  Max: 25
+  Exclude:
+    - 'Guardfile'
+    - 'Rakefile'
+    - '**/*.rake'
+    - 'spec/**/*.rb'
+    - 'lib/*/spec/**/*.rb'
+
+Gemspec/OrderedDependencies:
+  Enabled: false
+
+# `extend self` and `module_function` have different characteristics, and it's not an issue to use both.
+Style/ModuleFunction:
+  Enabled: false
