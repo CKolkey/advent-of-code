@@ -3,8 +3,6 @@
 require "debug"
 require "set"
 
-input = File.read("8.input")
-
 class Display
   attr_reader :numbers
 
@@ -44,4 +42,4 @@ class Display
   end
 end
 
-puts(input.split("\n").map { Display.new(*_1.split(" | ").map(&:split)).call }.sum(&:output) == 1_097_568)
+puts(File.read("8.input").split("\n").map { Display.new(*_1.split(" | ").map(&:split)).call }.sum(&:output) == 1_097_568)
