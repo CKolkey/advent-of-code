@@ -42,4 +42,9 @@ class Display
   end
 end
 
-puts(File.read("8.input").split("\n").map { Display.new(*_1.split(" | ").map(&:split)).call }.sum(&:output) == 1_097_568)
+sum = File.read("8.input")
+          .split("\n")
+          .map { Display.new(*_1.split(" | ").map(&:split)).call }
+          .sum(&:output)
+
+puts sum == 1_097_568
