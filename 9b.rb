@@ -26,7 +26,7 @@ x = Benchmark.measure do
   # At this point we don't care about the numbers anymore.
   # testing truthy/falsy in #valid_location? is _way_ faster than != 9
   #
-  # (  0.235539) with n != n
+  # (  0.235539) with n != 9
   # (  0.050858) with n as boolean
   @input = input.map { |row| row.map { |c| c != 9 } }
 
