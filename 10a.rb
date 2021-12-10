@@ -2,24 +2,21 @@
 
 require "debug"
 
-CORRUPT_PAIRS = ["(]", "(}", "(>", "{)", "{]", "{>", "[)", "[}", "[>", "<)", "<]", "<}"].freeze
-POINTS = { ")" => 3, "]" => 57, "}" => 1197, ">" => 25_137 }.freeze
+CORRUPT = ["(]", "(}", "(>", "{)", "{]", "{>", "[)", "[}", "[>", "<)", "<]", "<}"].freeze
+POINTS  = { ")" => 3, "]" => 57, "}" => 1197, ">" => 25_137 }.freeze
 
-SCORE = CORRUPT_PAIRS.map { |pair| [pair, POINTS[pair[-1]]] }.to_h
+SCORE = CORRUPT.map { |pair| [pair, POINTS[pair[-1]]] }.to_h
 
 def clean(line)
-  loop do
-    line_before = line
-    line = line.gsub(/(\(\)|\{\}|<>|\[\])/, "")
-
-    break if line_before == line
+  if line == (cleaner = line.gsub(/(\(\)|\{\}|<>|\[\])/, ""))
+    line
+  else
+    clean(cleaner)
   end
-
-  line
 end
 
 def score(line)
-  SCORE[CORRUPT_PAIRS.find { |pair| line.include?(pair) }] || 0
+  SCORE[CORRUPT.find { |pair| line.include?(pair) }] || 0
 end
 
 score = File.read("10.input")

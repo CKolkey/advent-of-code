@@ -6,14 +6,11 @@ CORRUPT = ["(]", "(}", "(>", "{)", "{]", "{>", "[)", "[}", "[>", "<)", "<]", "<}
 POINTS  = { "(" => 1, "[" => 2, "{" => 3, "<" => 4 }.freeze
 
 def clean(line)
-  loop do
-    line_before = line
-    line = line.gsub(/(\(\)|\{\}|<>|\[\])/, "")
-
-    break if line_before == line
+  if line == (cleaner = line.gsub(/(\(\)|\{\}|<>|\[\])/, ""))
+    line
+  else
+    clean(cleaner)
   end
-
-  line
 end
 
 def purify(line)
