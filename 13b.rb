@@ -2,11 +2,12 @@
 
 require "debug"
 
-class Array
+module ArrayExtension
   def ^(other)
-    map.with_index { |n, i| n || other[i] }
+    map.with_index { |b, i| b || other[i] }
   end
 end
+Array.include(ArrayExtension)
 
 class Grid
   def initialize(dots)
@@ -22,33 +23,28 @@ class Grid
 
   def fold(axis, line)
     case axis
-    when "x" then fold_x(line)
-    when "y" then fold_y(line)
-    end
-  end
-
-  def fold_x(line)
-    @grid = grid.transpose
-    fold_y(line)
-    @grid = grid.transpose
-  end
-
-  def fold_y(line)
-    top    = grid.slice(...line)
-    bottom = grid.slice((line + 1)..).reverse
-
-    @grid = top.map.with_index do |row, row_i|
-      row.map.with_index do |col, col_i|
-        col || bottom[row_i][col_i]
-      end
+    when "x" then fold_x!(line)
+    when "y" then fold_y!(line)
     end
   end
 
   def print
-    puts grid.map { |row| row.map { _1 ? "#" : " " }.join(" ") }.join("\n")
+    puts grid.map { |row| row.map { _1 ? "💩" : "  " }.join(" ") }.join("\n")
   end
 
   private
+
+  def fold_x!(line)
+    @grid = grid.transpose
+    fold_y!(line)
+    @grid = grid.transpose
+  end
+
+  def fold_y!(line)
+    @grid = grid.slice(...line)
+                .zip(grid.reverse.slice(...line))
+                .map { |(top, bottom)| top ^ bottom }
+  end
 
   def grid
     @grid ||= Array.new(@rows) { Array.new(@columns) { false } }
@@ -56,10 +52,7 @@ class Grid
 end
 
 dots, folds = File.read("13.input").split("\n\n")
-
 grid = Grid.new(dots).build!
-
-folds.scan(/([x,y])=(\d+)/).map { [_1.first, _1.last.to_i] }
-     .each { |fold| grid.fold(*fold) }
+folds.scan(/([x,y])=(\d+)/).each { |(axis, line)| grid.fold(axis, line.to_i) }
 
 grid.print
