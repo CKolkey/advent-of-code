@@ -122,8 +122,6 @@ class Array
   end
 end
 
-10.times do |i|
-  start = start.chars.each_cons(2).map { rules[_1 + _2] }.smoosh
-end
+10.times { start = start.chars.each_cons(2).map { rules[_1 + _2] }.smoosh }
 
 puts start.chars.tally.values.minmax.inject(:-).abs
