@@ -11,11 +11,15 @@ class Opcodes
     6 => ->(a, b)    { value(a, 0).zero? ? jump!(value(b, 1)) : next! },            # jump if false (zero)
     7 => ->(a, b, c) { write!(c, (value(a, 0) < value(b, 1) ? 1 : 0)) and next! },  # less than
     8 => ->(a, b, c) { write!(c, (value(a, 0) == value(b, 1) ? 1 : 0)) and next! }, # check equality
-    99 => ->         { raise StopIteration }                                        # halt
+    99 => ->         { halt! }                                                      # halt
   }.freeze
 
   def initialize(overloads = {})
     @opcodes = DEFAULTS.merge(overloads)
+  end
+
+  def overload_fn(opcode, func)
+    @opcodes[opcode] = func
   end
 
   def fn(opcode)
@@ -30,10 +34,13 @@ class IntcodeProcessor
     @program = program.split(',').map(&:to_i)
     @opcodes = opcodes
     @pointer = 0
+    @state   = :uninitialized
   end
 
   def run!
-    loop do
+    @state = :running
+
+    until halted? || suspended?
       @function = opcodes.fn(opcode)
       @params   = read((pointer + 1)..(pointer + @function.arity))
 
@@ -44,6 +51,16 @@ class IntcodeProcessor
   end
 
   def result = read(0)
+
+  def read_last = read(-1)
+
+  def halted? = @state == :halted
+
+  def suspended? = @state == :suspended
+
+  def running? = @state == :running
+
+  def uninitialized? = @state == :uninitialized
 
   private
 
@@ -66,6 +83,10 @@ class IntcodeProcessor
     read pointer
   end
 
+  def halt! = @state = :halted
+
+  def suspend! = @state = :suspended
+
   def read(...)
     @program.slice(...)
   end
@@ -81,4 +102,37 @@ class IntcodeProcessor
   def jump!(address)
     @pointer = address
   end
+end
+
+if ARGV.delete('--test')
+  def test(input, result: nil, state: nil, opcodes: Opcodes.new)
+    process = IntcodeProcessor.new(input, opcodes).run!
+
+    if result
+      if process.result == result
+        puts 'Good'
+      else
+        puts "FAILED! Expected: #{expected}, Actual: #{process.result}"
+      end
+    end
+
+    if state
+      if process.program == state
+        puts 'Good'
+      else
+        puts 'FAILED STATE!'
+        print 'Expected: '
+        p state
+        print 'Actual:   '
+        p process.program
+      end
+    end
+  end
+
+  opcode_overload_a = Opcodes.new({ 3 => ->(a) { (puts 'Input > 1' or write! a, 1) and next! } })
+  test File.read('5.input'), opcodes: opcode_overload_a # input 1 -> all 0's & 6745903
+
+  opcode_overload_b = Opcodes.new({ 3 => ->(a) { (puts 'Input > 5' or write! a, 5) and next! } })
+  test File.read('5.input'), opcodes: opcode_overload_b # input 5 -> 9168267
+
 end
