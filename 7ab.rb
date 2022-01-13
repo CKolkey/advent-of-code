@@ -8,49 +8,37 @@ class Amplifier
 
   def initialize(phase, program)
     @phase     = phase
-    @processor = IntcodeProcessor.new(program, opcodes)
-    @two_input = true
+    @opcodes   = Opcodes.new({ 4 => opcode4 })
+    @processor = IntcodeProcessor.new(program, @opcodes)
   end
 
   def run!(input)
-    opcodes.overload_fn(3, opcode3(input))
+    @opcodes.overload_fn(3, opcode3(input))
     processor.run!
     self
   end
 
-  def output
-    processor.uninitialized? ? 0 : processor.read_last
-  end
-
-  def halted? = processor.halted?
-
+  def output     = processor.uninitialized? ? 0 : processor.read_last
+  def halted?    = processor.halted?
   def suspended? = processor.suspended?
 
   private
 
-  def opcodes
-    @opcodes ||= Opcodes.new({ 4 => opcode4 })
-  end
-
-  # The first time the intcode computer runs it asks for two inputs.
+  # The first time the intcode computer runs it asks for two different inputs.
   # All subsequent runs only ask for one input
   #
   # On the first run, the lambda overloads itself with the second version
   def opcode3(input)
-    function = if @two_input
-                 <<~FN
-                   ->(a) {
-                       opcodes.overload_fn(3, ->(a) { write!(a, #{input}) and next! })
-                       write!(a, #{phase}) and next!
-                   }
-                 FN
-               else
-                 "->(a) { write!(a, #{input}) and next! }"
-               end
+    one_input_fn = "->(a) { write!(a, #{input}) and next! }"
 
-    @two_input = false
+    two_inputs_fn = <<~FN
+      ->(a) {
+          opcodes.overload_fn(3, #{one_input_fn})
+          write!(a, #{phase}) and next!
+      }
+    FN
 
-    eval function
+    eval processor.uninitialized? ? two_inputs_fn : one_input_fn
   end
 
   def opcode4
@@ -69,9 +57,11 @@ class Circuit
   def inspect = "<Circuit :: Sequence: #{sequence}, Signal: #{signal}>"
   def signal  = amps.last.output
 
-  def call(state = nil)
-    raise 'No State Provided' unless state
+  def call = raise NotImplementedError
 
+  private
+
+  def run_until_state(state)
     until amps.all?(&state)
       input = amps.last.output
       amp   = amps.shift.run!(input)
@@ -83,11 +73,11 @@ class Circuit
 end
 
 class CircuitV1 < Circuit
-  def call = super(:suspended?)
+  def call = run_until_state(:suspended?)
 end
 
 class CircuitV2 < Circuit
-  def call = super(:halted?)
+  def call = run_until_state(:halted?)
 end
 
 program = File.read '7.input'
@@ -98,4 +88,6 @@ pp circuits_v1.max_by(&:signal)
 
 circuits_v2 = (5..9).to_a.permutation.map { CircuitV2.new(program, _1).call }
 print 'Part B: '
+pp circuits_v2.max_by(&:signal)
+pp circuits_v2.max_by(&:signal)
 pp circuits_v2.max_by(&:signal)
