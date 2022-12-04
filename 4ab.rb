@@ -1,4 +1,4 @@
-pairs = File.read('4.input').split.map { eval("[#{_1.gsub('-', '..')}]") }
+pairs = File.readlines('4.input').map { eval("[#{_1.gsub('-', '..')}]") }
 
 # Part 1
 puts(pairs.count { |(a, b)| a.cover?(b) || b.cover?(a) })
