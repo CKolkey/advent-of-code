@@ -35,8 +35,7 @@ end
 class CraneMover9001 < CraneMover
   def perform!
     instructions.each do |(quantity, from, to)|
-      stacks[to].unshift(stacks[from].shift(quantity))
-      stacks.transform_values!(&:flatten)
+      stacks[to].unshift(stacks[from].shift(quantity)).flatten!
     end
   end
 end
