@@ -22,12 +22,11 @@ class CraneMover
   end
 
   def build_stacks(stacks)
-    stacks.lines[..-2]
-          .map { _1.scan(/(\w|\s{4})/).flatten }
+    stacks.lines
+          .map { _1.scan(/\w|\s{4}/) }
           .transpose
           .map { _1.grep(/\w/) }
-          .map.with_index(1) { [_2, _1] }
-          .to_h
+          .to_h { [_1.pop.to_i, _1] }
   end
 end
 

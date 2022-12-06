@@ -1,4 +1,3 @@
-require 'debug'
 require 'rspec'
 
 def marker_index(input, preamble:)
