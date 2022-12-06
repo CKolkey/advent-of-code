@@ -8,6 +8,7 @@ class CraneMover
 
   def operate!
     instructions.each { perform_instruction!(*_1) }
+    self
   end
 
   def results
@@ -38,16 +39,12 @@ end
 
 class CraneMover9001 < CraneMover
   def perform_instruction!(quantity, from, to)
-    stacks[to].unshift(stacks[from].shift(quantity)).flatten!
+    stacks[to].unshift(*stacks[from].shift(quantity))
   end
 end
 
-input = File.read("5.input").split("\n\n")
+input = File.read('5.input').split("\n\n")
+puts [CraneMover9000.new(*input), CraneMover9001.new(*input)].map { _1.operate!.results }
 
-cm9k = CraneMover9000.new(*input)
-cm9k.operate!
-puts cm9k.results # == "SPFMVDTZT"
-
-cm9k1 = CraneMover9001.new(*input)
-cm9k1.operate!
-puts cm9k1.results # == "ZFSJBPRFP"
+# "SPFMVDTZT"
+# "ZFSJBPRFP"
