@@ -1,4 +1,4 @@
-require 'debug'
+require "debug"
 
 input = <<~INPUT
   $ cd /
@@ -26,106 +26,65 @@ input = <<~INPUT
   7214296 k
 INPUT
 
-class Filesystem
-  def initialize
-    @root = Dir.new(name: '/')
-    @cwd  = @root
-  end
+input = File.read("7.input")
 
-  def inspect
-    build_tree(@root)
-  end
-
-  def build_tree(node, indent: 0)
-    if node.respond_to?(:children)
-      [
-        ['+' * indent, node.name, node.size].compact.join(' '),
-        node.children.map { |child| build_tree(child, indent: indent + 2) }
-      ]
-    else
-      "#{'-' * indent} #{node.name}: \t#{node.size}"
-    end
-  end
-
-  def cd(name)
-    return if name == @cwd.name
-
-    if name == '..'
-      @cwd = @cwd.parent
-    elsif @cwd.find(name)
-      @cwd = @cwd.find(name)
-    else
-      dir = Dir.new(name:, parent: @cwd)
-      @cwd.add(dir)
-      @cwd = dir
-    end
-  end
-
-  def create(size, name)
-    @cwd.add(File.new(name:, size:))
-  end
-
-  class Dir
-    attr_reader :name, :parent, :children
-
-    def initialize(name:, parent: nil, children: [])
-      @name     = name
-      @parent   = parent
-      @children = children
-    end
-
-    def size
-      children.sum(&:size)
-    end
-
-    def find(name)
-      @children.find { |child| child.name == name }
-    end
-
-    def add(child)
-      @children << child
-    end
-  end
-
-  class File
-    attr_reader :name, :size
-
-    def initialize(name:, size:)
-      @name = name
-      @size = size.to_i
-    end
-  end
-end
-
-filesystem = Filesystem.new
+cwd = filesystem = {}
+filesystem["/"] = { ".." => filesystem }
 
 input.split("\n").each do |command|
   case command
+  when /^dir/
+    cwd[command[4..]] = { ".." => cwd }
   when /^\$ cd/
-    filesystem.cd command[5..]
+    cwd = cwd[command[5..]]
   when /^\d+/
-    filesystem.create(*command.split)
+    size, name = command.split
+    cwd[name]  = size.to_i
   end
 end
 
-# filesystem = {}
-# cwd = filesystem
-#
-# input.split("\n").each do |command|
-#   case command
-#   when /^\$ cd/
-#     dir = command[5..]
-#     cwd = if cwd[dir]
-#             cwd[dir]
-#           else
-#             cwd[dir] = { '..' => cwd }
-#           end
-#   when /^\d+/
-#     size, name = command.split
-#     cwd[name] = size.to_i
-#   end
-# end
+def sum_tree(tree)
+  tree.except("..")
+      .values
+      .sum { |node| node.is_a?(Hash) ? sum_tree(node) : node }
+end
 
-puts filesystem.inspect
+def process_tree(tree)
+  tree.transform_values do |node|
+    next unless node.is_a? Hash
+
+    node[:size] = sum_tree(node)
+    process_tree(node.except(".."))
+  end
+end
+
+def collect_dirs(tree, collector = {})
+  tree.except("..").each_key do |name|
+    next unless tree[name].is_a?(Hash)
+
+    collector[name] = tree[name][:size]
+    collect_dirs(tree[name], collector)
+  end
+
+  collector
+end
+
+# puts sum_tree(filesystem.dig("/")) == 48_381_165
+# puts sum_tree(filesystem.dig("/", "a")) == 94_853
+# puts sum_tree(filesystem.dig("/", "a", "e")) == 584
+# puts sum_tree(filesystem.dig("/", "d")) == 24_933_642
+
+process_tree(filesystem)
+
+# puts filesystem.dig("/", :size) == 48_381_165
+# puts filesystem.dig("/", "a", :size) == 94_853
+# puts filesystem.dig("/", "a", "e", :size) == 584
+# puts filesystem.dig("/", "d", :size) == 24_933_642
+
+dirs = collect_dirs(filesystem)
+
+# puts dirs == { "/" => 48_381_165, "a" => 94_853, "e" => 584, "d" => 24_933_642 }
+# puts dirs.select { |_, v| v <= 100_000 }.values.sum == 95_437
+puts dirs.select { |_, v| v <= 100_000 }.values.sum
 
 debugger
