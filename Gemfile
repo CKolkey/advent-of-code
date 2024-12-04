@@ -2,6 +2,8 @@
 
 source "https://rubygems.org"
 
-# gem "rails"
+git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
-gem "solargraph", "~> 0.44.2"
+gem "solargraph"
+gem "rubocop"
+gem "rubocop-performance"
