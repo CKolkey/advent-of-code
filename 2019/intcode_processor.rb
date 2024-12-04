@@ -12,12 +12,30 @@ require 'debug'
 #  8: Write 1 or 0 (true/false) to address c comparing if a == b
 #  9: Adjust @offset value
 # 99: Halt
+#
+# Original 4 (Print to STDOUT)
+# 4 => ->(a)       { puts("Output: #{value(a, 0)}") or next! },
+#
+#
+# For automated input:
+#
+#  def opcode3(input)
+#    eval <<~FN
+#      ->(a) {
+#        opcodes.overload_fn(3, ->(a) { suspend! })
+#        write!(address(a, 0), #{input}) and next!
+#      }
+#    FN
+#  end
+#
+
+
 class Opcodes
   DEFAULTS = {
     1 => ->(a, b, c) { write!(address(c, 2), value(a, 0) + value(b, 1)) and next! },
     2 => ->(a, b, c) { write!(address(c, 2), value(a, 0) * value(b, 1)) and next! },
     3 => ->(a)       { print('Input > ') or write!(address(a, 0), gets.chomp.to_i) and next! },
-    4 => ->(a)       { puts("Output: #{value(a, 0)}") or next! },
+    4 => ->(a)       { buffer.push(value(a, 0)) and next! },
     5 => ->(a, b)    { !value(a, 0).zero? ? jump!(value(b, 1)) : next! },
     6 => ->(a, b)    { value(a, 0).zero? ? jump!(value(b, 1)) : next! },
     7 => ->(a, b, c) { write!(address(c, 2), (value(a, 0) < value(b, 1) ? 1 : 0)) and next! },
@@ -30,8 +48,8 @@ class Opcodes
     @opcodes = DEFAULTS.merge(overloads)
   end
 
-  def overload_fn(opcode, func)
-    @opcodes[opcode] = func
+  def overload_fn(opcode, fn)
+    @opcodes[opcode] = fn
   end
 
   def fn(opcode)
@@ -40,35 +58,37 @@ class Opcodes
 end
 
 class IntcodeProcessor
-  attr_reader :program, :pointer, :opcodes
+  attr_reader :program, :pointer, :opcodes, :buffer
 
   def initialize(program, opcodes = Opcodes.new)
     @program = program.split(',').map(&:to_i)
     @opcodes = opcodes
     @state   = :uninitialized
-    @pointer = 0
-    @offset  = 0
-    @cycles  = 0
+    @pointer = 0                 # Current memory address being read
+    @offset  = 0                 # Tracks relative offset for reading memory in mode 2
+    @buffer  = []                # Output Buffer that can be written to and read from
+    @cycles  = 0                 # How many CPU cycles have been completed
   end
 
   def run!
     @state = :running
 
     until halted? || suspended?
-      @function = opcodes.fn(opcode)
-      @params   = read((pointer + 1)..(pointer + @function.arity))
+      @params = read((pointer + 1)..(pointer + function.arity))
 
-      instance_exec(*@params, &@function)
+      instance_exec(*@params, &function)
       @cycles += 1
     end
 
-    puts "(#{@cycles} cycles)"
+    # puts " (#{@state} at #{@cycles} cycles)"
     self
   end
 
-  def result = read(0)
+  def pop(n) = buffer.pop(n)
 
-  def read_last = read(-1)
+  # def result = read(0)
+
+  # def read_last = read(-1)
 
   def halted? = @state == :halted
 
@@ -79,6 +99,10 @@ class IntcodeProcessor
   def uninitialized? = @state == :uninitialized
 
   private
+
+  def function
+    opcodes.fn(opcode)
+  end
 
   def opcode
     instruction.digits[..1].reverse.join.to_i
