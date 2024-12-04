@@ -12,6 +12,7 @@ puts input.scan(/mul\(\d+,\d+\)/).sum(&method(:eval)) # 153_469_856
 # Part 2
 # input = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
 #
+sum = 0
 instructions = input.scan(/(mul\(\d+,\d+\)|do\(\)|don't\(\))/).flatten.map do |fn|
   case fn
   when "do()"    then "start()"
