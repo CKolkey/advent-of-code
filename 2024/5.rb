@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Prepare data
 input          = DATA.read
 rules, updates = input.split("\n\n").map(&:split)
 rules          = rules.map { _1.split("|").map(&:to_i) }.group_by(&:first).transform_values { _1.map(&:last) }
@@ -7,17 +8,21 @@ updates        = updates.map { _1.split(",").map(&:to_i) }
 
 def valid?(update, rules)
   update.all? do |n|
+    # When there are no rules for a number, it's fine
     next true if rules[n].nil?
 
-    position = update.index(n)
+    # Check all rules apply
     rules[n].all? do |nn|
+      # If the number isn't present, it's fine
       next true if update.index(nn).nil?
 
-      update.index(nn) > position
+      # Verify the two numbers obey the ordering rule
+      update.index(nn) > update.index(n)
     end
   end
 end
 
+# Sum the middle number of the arrays to get the score
 def score(updates) = updates.sum { |update| update[update.length / 2] }
 
 def sort(update, rules)
@@ -26,13 +31,19 @@ def sort(update, rules)
   loop do
     return update if valid?(update, rules)
 
+    # If there is a rule for the number the cursor is pointing to...
     rules[update[cursor]]&.each do |n|
+      # ... find it's index
       idx = update.index(n)
+
+      # If the index is nil, it's not present, and if it's greater than the cursor, then it's already in order
       next if idx.nil? || idx > cursor
 
+      # swap the number that's at the wrong position to be just after the cursor's number
       update.insert(cursor, update.delete_at(idx))
     end
 
+    # update the cursor, modulo length, to wrap around to start
     cursor = cursor.succ % update.length
   end
 end
