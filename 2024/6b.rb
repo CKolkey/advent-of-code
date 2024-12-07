@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "debug"
+require "parallel"
 
 input = <<~INPUT
   ....#.....
@@ -21,99 +22,107 @@ NORTH   = [-1, 0]
 EAST    = [0, 1]
 SOUTH   = [1, 0]
 WEST    = [0, -1]
+
 VECTORS = { "^" => NORTH, ">" => EAST, "v" => SOUTH, "<" => WEST }
 
-@vector   = nil
-@position = nil
-@path     = []
-@map      = {}
-
-input.split.map(&:chars).each_with_index do |line, y|
-  line.each_with_index do |point, x|
-    @map[[y, x]] = point
-    next unless VECTORS.keys.include?(point)
-
-    @position = [y, x]
-    @vector   = VECTORS.fetch(point)
-
-    # The guard is ephemeral, so don't capture it on the map
-    @map[[y, x]] = "."
+class Builder
+  def initialize(input)
+    @input = input
   end
-end
 
-def peek          = @map.fetch(next_position, nil)
-def next_position = [@position.first + @vector.first, @position.last + @vector.last]
-def move          = @position = next_position
-def rotate        = @vector = turn_right
-def track         = @path.push(@position)
+  def call
+    vector   = nil
+    position = nil
+    map      = {}
 
-def turn_right
-  case @vector
-  when NORTH then EAST
-  when EAST  then SOUTH
-  when SOUTH then WEST
-  when WEST  then NORTH
-  end
-end
+    @input.split.map(&:chars).each_with_index do |line, y|
+      line.each_with_index do |point, x|
+        map[[y, x]] = point
+        next unless VECTORS.keys.include?(point)
 
-def pretty_object(object)
-  case object
-  when "." then " "
-  else
-    object
-  end
-end
+        position = [y, x]
+        vector   = VECTORS.fetch(point)
 
-def pretty_player
-  case @vector
-  when NORTH then "^"
-  when EAST then ">"
-  when SOUTH then "v"
-  when WEST then "<"
-  end
-end
-
-def blank_map
-  max_x, max_y = @map.keys.last
-  Array.new(max_x + 1) { Array.new(max_y + 1) { nil } }
-end
-
-def visualize_path
-  blank_map.tap do |empty|
-    @map.each do |coordinate, object|
-      empty[coordinate.first][coordinate.last] = pretty_object(object)
+        # The guard is ephemeral, so don't capture it on the map
+        map[[y, x]] = "."
+      end
     end
 
-    @path.each do |coordinate|
-      empty[coordinate.first][coordinate.last] = "X"
+    { vector:, position:, map: }
+  end
+end
+
+class Run
+  attr_reader :path
+
+  def initialize(vector:, position:, map:, path: Set.new)
+    @vector   = vector
+    @position = position
+    @map      = map
+    @path     = path
+  end
+
+  def call
+    track # capture initial
+
+    loop do
+      if peek == "#"
+        rotate
+        next
+      else
+        move
+      end
+
+      break if peek.nil? || in_loop?
+
+      track
     end
 
-    empty[@position.first][@position.last] = pretty_player
-  end
-end
-
-def visualize
-  puts "\e[H" # Sets cursor back to 0,0
-  puts visualize_path.map(&:join)
-end
-
-puts `clear`
-
-track # Capture starting position
-
-until peek.nil?
-  visualize
-
-  if peek == "#"
-    rotate
-    next
+    self
   end
 
-  move
-  track
+  def peek          = @map.fetch(next_position, nil)
+
+  def move          = @position = next_position
+
+  def next_position = [@position.first + @vector.first, @position.last + @vector.last]
+
+  def track         = @path << [@position, @vector]
+
+  def in_loop?      = @path.include?([@position, @vector])
+
+  def rotate        = @vector = turn_right
+
+  def turn_right    = case @vector
+                      when NORTH then EAST
+                      when EAST  then SOUTH
+                      when SOUTH then WEST
+                      when WEST  then NORTH
+                      end
 end
 
-puts @path.uniq.count # 4982
+def block_point(point, input)
+  this_input = input.split
+  this_input[point.first][point.last] = "#"
+
+  this_input.join("\n")
+end
+
+initial       = Run.new(**Builder.new(input).call).call
+possibilities = initial.path.map(&:first).uniq
+start         = possibilities.shift
+possibilities = possibilities.uniq.reject { _1 == start }
+
+results = Parallel.map(possibilities, in_processes: Etc.nprocessors, progress: true) do |point|
+  map = block_point(point, input)
+  run = Run.new(**Builder.new(map).call).call
+
+  point if run.in_loop?
+end
+
+puts results.compact.size
+
+debugger(pre: "info")
 
 __END__
 ....#.......#.............#..##...................#..#..#..................................#....#.................................
@@ -246,3 +255,4 @@ __END__
 .#.............#.....................#........#..........................#.........#..........................#...........#.......
 .....#.............#.....#..........#.....#.............#............#.............................#..........................#...
 ...................#.......................#......#.#..............#..###.....#......................#...........#.......#.#......
+
