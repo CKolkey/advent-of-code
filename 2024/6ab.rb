@@ -95,16 +95,21 @@ end
 
 start         = Builder.new(input).call
 initial       = Run.new(**start).call
-possibilities = initial.path.map(&:first).reject { _1 == start[:position] }.uniq
+possibilities = initial.path.map(&:first)
 
-runs = Parallel.filter_map(possibilities, in_processes: Etc.nprocessors, progress: true) do |point|
+runs = Parallel.filter_map(
+  possibilities.reject { _1 == start[:position] }.uniq,
+  in_processes: Etc.nprocessors,
+  progress: true
+) do |point|
   map = block_point(point, input)
   run = Run.new(**Builder.new(map).call).call
 
   point if run.looped
 end
 
-puts runs.size
+puts "Part A: #{possibilities.uniq.size}" # 4982
+puts "Part B: #{runs.size}" # 1663
 
 __END__
 ....#.......#.............#..##...................#..#..#..................................#....#.................................
