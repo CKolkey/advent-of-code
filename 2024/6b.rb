@@ -3,19 +3,6 @@
 require "debug"
 require "parallel"
 
-input = <<~INPUT
-  ....#.....
-  .........#
-  ..........
-  ..#.......
-  .......#..
-  ..........
-  .#..^.....
-  ........#.
-  #.........
-  ......#...
-INPUT
-
 input = DATA.read
 
 NORTH   = [-1, 0]
@@ -63,19 +50,15 @@ class Run
   end
 
   def call
-    track # capture initial
+    until peek.nil? || in_loop?
+      track
 
-    loop do
       if peek == "#"
         rotate
         next
       else
         move
       end
-
-      break if peek.nil? || in_loop?
-
-      track
     end
 
     self
@@ -91,9 +74,9 @@ class Run
 
   def in_loop?      = @path.include?([@position, @vector])
 
-  def rotate        = @vector = turn_right
+  def rotate        = @vector = next_vector
 
-  def turn_right    = case @vector
+  def next_vector   = case @vector
                       when NORTH then EAST
                       when EAST  then SOUTH
                       when SOUTH then WEST
@@ -108,21 +91,18 @@ def block_point(point, input)
   this_input.join("\n")
 end
 
-initial       = Run.new(**Builder.new(input).call).call
-possibilities = initial.path.map(&:first).uniq
-start         = possibilities.shift
-possibilities = possibilities.uniq.reject { _1 == start }
+start         = Builder.new(input).call
+initial       = Run.new(**start).call
+possibilities = initial.path.map(&:first).reject { _1 == start[:position] }.uniq
 
-results = Parallel.map(possibilities, in_processes: Etc.nprocessors, progress: true) do |point|
+runs = Parallel.filter_map(possibilities, in_processes: Etc.nprocessors, progress: true) do |point|
   map = block_point(point, input)
   run = Run.new(**Builder.new(map).call).call
 
   point if run.in_loop?
 end
 
-puts results.compact.size
-
-debugger(pre: "info")
+puts runs.size
 
 __END__
 ....#.......#.............#..##...................#..#..#..................................#....#.................................
