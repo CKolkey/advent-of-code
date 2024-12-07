@@ -49,6 +49,7 @@ PLATFORMS
 DEPENDENCIES
   amazing_print
   parallel
+  prism
   rubocop
   rubocop-performance
   ruby-lsp

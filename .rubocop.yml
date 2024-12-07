@@ -1,6 +1,7 @@
 AllCops:
   NewCops: enable
-  TargetRubyVersion: 3.0
+  ParserEngine: parser_prism
+  TargetRubyVersion: 3.3
   Include:
     - 'app/**/*.rb'
     - 'spec/**/*.rb'
