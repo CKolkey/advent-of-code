@@ -40,23 +40,31 @@ class Builder
 end
 
 class Run
-  attr_reader :path
+  attr_reader :path, :looped
 
-  def initialize(vector:, position:, map:, path: Set.new)
+  def initialize(vector:, position:, map:)
     @vector   = vector
     @position = position
     @map      = map
-    @path     = path
+    @path     = Set.new
+    @looped   = false
   end
 
   def call
-    until peek.nil? || in_loop?
+    loop do
+      break if peek.nil?
+      @looped = true and break if in_loop?
+
       track
-      peek == "#" ? rotate : move
+      blocked? ? rotate : move
     end
+
+    track
 
     self
   end
+
+  def blocked?      = peek == "#"
 
   def peek          = @map.fetch(next_position, nil)
 
@@ -93,7 +101,7 @@ runs = Parallel.filter_map(possibilities, in_processes: Etc.nprocessors, progres
   map = block_point(point, input)
   run = Run.new(**Builder.new(map).call).call
 
-  point if run.in_loop?
+  point if run.looped
 end
 
 puts runs.size
