@@ -52,13 +52,7 @@ class Run
   def call
     until peek.nil? || in_loop?
       track
-
-      if peek == "#"
-        rotate
-        next
-      else
-        move
-      end
+      peek == "#" ? rotate : move
     end
 
     self
