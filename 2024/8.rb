@@ -23,8 +23,8 @@ end
 
 def slope(point_a, point_b)
   [
-    point_a.first - point_b.first,
-    point_a.last - point_b.last
+    point_a.first - point_b.first, # rise
+    point_a.last - point_b.last    # run
   ]
 end
 

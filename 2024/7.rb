@@ -18,12 +18,13 @@ def possible?(lhs, rhs, operators)
   return false if rhs.first > lhs
 
   operators.any? do |operator|
-    if rhs[1].nil?
-      lhs == rhs[0]
+    a, b, *rest = rhs
+
+    if b.nil?
+      lhs == a
     else
-      rest = rhs[2..]
-      new  = rhs[0].send(operator, rhs[1])
-      possible?(lhs, rest.unshift(new), operators)
+      result = a.send(operator, b)
+      possible?(lhs, rest.unshift(result), operators)
     end
   end
 end
