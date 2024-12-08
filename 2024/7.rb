@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 # Define a concatenation operator for integers
-Integer.define_method(:"||") { |other| (to_s + other.to_s).to_i }
+Integer.define_method(:"||") do |other|
+  power = (Math.log10(other).to_i + 1)
+  (self * (10**power)) + other
+end
 
 input = DATA.read
 input = input.scan(/(\d+): ([\d ]+)/).map { _1.map(&:split).flatten.map(&:to_i) }
@@ -15,10 +18,12 @@ def possible?(lhs, rhs, operators)
   return false if rhs.first > lhs
 
   operators.any? do |operator|
-    if rhs.one?
-      lhs == rhs.first
+    if rhs[1].nil?
+      lhs == rhs[0]
     else
-      possible?(lhs, [rhs[0].send(operator, rhs[1]), *rhs[2..]], operators)
+      rest = rhs[2..]
+      new  = rhs[0].send(operator, rhs[1])
+      possible?(lhs, rest.unshift(new), operators)
     end
   end
 end
