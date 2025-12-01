@@ -10,6 +10,8 @@ GEM
     parser (3.3.6.0)
       ast (~> 2.4.1)
       racc
+    pastel (0.8.0)
+      tty-color (~> 0.5)
     prism (1.2.0)
     racc (1.8.1)
     rainbow (3.1.1)
@@ -38,6 +40,7 @@ GEM
       sorbet-runtime (>= 0.5.10782)
     ruby-progressbar (1.13.0)
     sorbet-runtime (0.5.11678)
+    tty-color (0.6.0)
     unicode-display_width (3.1.2)
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
@@ -49,6 +52,7 @@ PLATFORMS
 DEPENDENCIES
   amazing_print
   parallel
+  pastel
   prism
   rubocop
   rubocop-performance
