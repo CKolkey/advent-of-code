@@ -15,14 +15,6 @@ INPUT
 
 input = DATA.read
 
-def count_adjacent(locations, x, y)
-  [-1, 0, 1].repeated_permutation(2).count do |dx, dy|
-    next if dx.zero? && dy.zero?
-
-    locations.include?([x + dx, y + dy])
-  end
-end
-
 def build_map(input)
   Set.new.tap do |map|
     input.split.map(&:chars).each_with_index do |row, y|
@@ -37,6 +29,14 @@ end
 
 def removable_points(map)
   map.select { |loc| count_adjacent(map, *loc) < 4 }
+end
+
+def count_adjacent(locations, x, y)
+  [-1, 0, 1].repeated_permutation(2).count do |dx, dy|
+    next if dx.zero? && dy.zero?
+
+    locations.include?([x + dx, y + dy])
+  end
 end
 
 def solve(input, bound)
